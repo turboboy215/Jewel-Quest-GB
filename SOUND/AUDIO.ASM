@@ -42,16 +42,19 @@ SECTION "Audio", ROMX[$4000], BANK[$1]
 
 	jp LoadSFX
 
-SetTempo:
+
+SetTempo:
 	ld [Tempo], a
 	ret
 
-PlaySongSFX:
+
+PlaySongSFX:
 	call PlaySong
 	call PlaySFXC1
 	ret
 
-;Check the volume of the right speaker - if it is too low, then muteCheckVolR1:
+;Check the volume of the right speaker - if it is too low, then mute
+CheckVolR1:
 	ldh a, [rNR50]
 	;If volume is 0, then load 0 into B
 	and %00000111
@@ -67,7 +70,8 @@ SECTION "Audio", ROMX[$4000], BANK[$1]
 .CheckVolR10
 	ld b, 0
 
-;Now, check the volume of the left speakerCheckVolL1:
+;Now, check the volume of the left speaker
+CheckVolL1:
 	ldh a, [rNR50]
 	;If volume is 0, then load 0 into A
 	and %01110000
@@ -82,7 +86,8 @@ SECTION "Audio", ROMX[$4000], BANK[$1]
 .CheckVolL10
 	ld a, 0
 
-;Check if the resulting values are 0 or notCtrlCheck:
+;Check if the resulting values are 0 or not
+CtrlCheck:
 	or b
 	cp 0
 	;If not 0, then load new value into NR50
@@ -91,12 +96,14 @@ SECTION "Audio", ROMX[$4000], BANK[$1]
 	;Otherwise, set values to 0
 	call ClearChVol
 
-;Load the value into master volume controlSetMasterVol:
+;Load the value into master volume control
+SetMasterVol:
 	ldh [rNR50], a
 	ret
 
 
-;Clear all audioClearAudio:
+;Clear all audio
+ClearAudio:
 	xor a
 	ldh [rNR51], a
 	ld [MasterPan], a
@@ -105,7 +112,8 @@ SECTION "Audio", ROMX[$4000], BANK[$1]
 	ret
 
 
-;Clear each channel's volumeClearChVol:
+;Clear each channel's volume
+ClearChVol:
 	ld a, 0
 	ldh [rNR12], a
 	ldh [rNR22], a
@@ -115,13 +123,15 @@ SECTION "Audio", ROMX[$4000], BANK[$1]
 	ret
 
 
-;Turn music onMusicOn:
+;Turn music on
+MusicOn:
 	ld a, $FF
 	ld [PlayFlag], a
 	ret
 
 
-;Check the status of the audioCheckVolNew:
+;Check the status of the audio
+CheckVolNew:
 	;Set the music play flag
 	call MusicOn
 	;Check the master volume control
@@ -136,7 +146,8 @@ SECTION "Audio", ROMX[$4000], BANK[$1]
 	ret
 
 
-;Check the volume of the right speaker again - if it is not full, then set to maxCheckVolR2:
+;Check the volume of the right speaker again - if it is not full, then set to max
+CheckVolR2:
 	and %00000111
 	cp %00000111
 	jr z, CheckVolL2
@@ -146,7 +157,8 @@ SECTION "Audio", ROMX[$4000], BANK[$1]
 	ld b, a
 
 
-;Check the volume of the left speaker againCheckVolL2:
+;Check the volume of the left speaker again
+CheckVolL2:
 	ldh a, [rNR50]
 	;If at full volume
 	and %01110000
@@ -171,7 +183,8 @@ SECTION "Audio", ROMX[$4000], BANK[$1]
 	ret
 
 
-;Get SFX from numberLoadSFX:
+;Get SFX from number
+LoadSFX:
 	add a
 	add a
 	ld hl, SFXTab
@@ -182,7 +195,8 @@ SECTION "Audio", ROMX[$4000], BANK[$1]
 	inc h
 
 
-;Get first channel macro valueGetSFX:
+;Get first channel macro value
+GetSFX:
 	ld a, [hl]
 	;$FF = Skip
 	cp $FF
@@ -228,14 +242,16 @@ SECTION "Audio", ROMX[$4000], BANK[$1]
 .ExitSFX
 	ret
 
-PlaySFXFromMacro:
+
+PlaySFXFromMacro:
 	push hl
 	call GetSFXMacro
 	pop hl
 	ret
 
 
-;Clear RAM and copy waveformInit:
+;Clear RAM and copy waveform
+Init:
 
 	;Disable audio
 	ld a, 0
@@ -282,7 +298,8 @@ SECTION "Audio", ROMX[$4000], BANK[$1]
 	ret
 
 
-;Load songLoadSong:
+;Load song
+LoadSong:
 ;Get song number from A
 	ld l, a
 	ld h, $00
@@ -338,7 +355,8 @@ SECTION "Audio", ROMX[$4000], BANK[$1]
 	ld [Tempo], a
 	ld a, 1
 	ld [BeatCounter], a
-ChannelInit:
+
+ChannelInit:
 	;Turn on channels
 	ld a, %10001111
 	ldh [rNR52], a
@@ -383,7 +401,8 @@ SECTION "Audio", ROMX[$4000], BANK[$1]
 	ld [C4VibSeqDelay], a
 	ret
 
-PlaySong:
+
+PlaySong:
 	;Check to see if the song is currently playing
 	ld a, [PlayFlag]
 	and a
@@ -397,7 +416,8 @@ SECTION "Audio", ROMX[$4000], BANK[$1]
 	ld [BeatCounter], a
 	;Don't update if no overflow
 	ret nc
-StartC1:
+
+StartC1:
 	;Set current channel number (0)
 	xor a
 	ld [CurChan], a
@@ -542,7 +562,8 @@ SECTION "Audio", ROMX[$4000], BANK[$1]
 	inc bc
 	ld a, [bc]
 	ld [C1ModSeq+1], a
-StartC2:
+
+StartC2:
 	;Set current channel number (1)
 	ld a, 1
 	ld [CurChan], a
@@ -686,7 +707,8 @@ SECTION "Audio", ROMX[$4000], BANK[$1]
 	inc bc
 	ld a, [bc]
 	ld [C2ModSeq+1], a
-StartC3:
+
+StartC3:
 	;Set current channel number (2)
 	ld a, 2
 	ld [CurChan], a
@@ -832,7 +854,8 @@ SECTION "Audio", ROMX[$4000], BANK[$1]
 	inc bc
 	ld a, [bc]
 	ld [C3ModSeq+1], a
-StartC4:
+
+StartC4:
 	;Set current channel number (3)
 	ld a, 3
 	ld [CurChan], a
@@ -886,7 +909,8 @@ SECTION "Audio", ROMX[$4000], BANK[$1]
 	call SetPerLo
 	ret
 
-CheckEnvSeqDelay:
+
+CheckEnvSeqDelay:
 ;Check if envelope sequence is enabled
 	ld a, [hl]
 	and a
@@ -908,7 +932,8 @@ SECTION "Audio", ROMX[$4000], BANK[$1]
 	ld [hl], a
 	ret
 
-ProcessEnvSeq:
+
+ProcessEnvSeq:
 	;Write the volume to the register
 	ld [de], a
 	;Get next byte
@@ -944,7 +969,8 @@ SECTION "Audio", ROMX[$4000], BANK[$1]
 	inc bc
 	ret
 
-CheckVibSeqDelay:
+
+CheckVibSeqDelay:
 	;If value is 0, then return
 	ld a, [hl]
 	and a
@@ -975,7 +1001,8 @@ SECTION "Audio", ROMX[$4000], BANK[$1]
 	pop hl
 	ret
 
-ProcessVibSeq:
+
+ProcessVibSeq:
 	;Is it a loop command?
 	cp $7D
 	;If so, then keep checking
@@ -1018,7 +1045,8 @@ SECTION "Audio", ROMX[$4000], BANK[$1]
 	pop hl
 	ret
 
-ProcessVibLoop:
+
+ProcessVibLoop:
 	;Get the next 2 bytes (pointer) and jump to position
 	inc bc
 	ld a, [bc]
@@ -1034,7 +1062,8 @@ SECTION "Audio", ROMX[$4000], BANK[$1]
 	ld [hl], a
 	ret
 
-GetNextByte:
+
+GetNextByte:
 	;Check to see if the current channel is 1-3
 	ld a, [hl]
 	and %00000010
@@ -1081,7 +1110,8 @@ SECTION "Audio", ROMX[$4000], BANK[$1]
 	
 	;Save the current note value
 	push af
-	ld a, [CurChan]CheckC1:
+	ld a, [CurChan]
+CheckC1:
 	;Is the channel 1?
 	cp 0
 	;If not, then skip to channel 2
@@ -1090,7 +1120,8 @@ SECTION "Audio", ROMX[$4000], BANK[$1]
 	;Otherwise, then save current Ch1 note
 	ld a, d
 	ld [CurNoteC1], a
-CheckC2:
+
+CheckC2:
 	;Is the channel 2?
 	cp 1
 	;If not, then skip to channel 3
@@ -1098,7 +1129,8 @@ SECTION "Audio", ROMX[$4000], BANK[$1]
 
 	ld a, d
 	ld [CurNoteC2], a
-CheckC3:
+
+CheckC3:
 	;Is the channel 3?
 	cp 2
 	;If not, then skip to the next part
@@ -1107,7 +1139,8 @@ SECTION "Audio", ROMX[$4000], BANK[$1]
 	ld a, d
 	ld [CurNoteC3], a
 
-;Get the current frequencyGetFreq:
+;Get the current frequency
+GetFreq:
 	pop af
 	ld de, FreqsHi
 	add e
@@ -1144,7 +1177,8 @@ SECTION "Audio", ROMX[$4000], BANK[$1]
 	inc hl
 	ld [hl], a
 	
-;Now get the note length from the next byteGetLen:	
+;Now get the note length from the next byte
+GetLen:	
 	inc bc
 	ld a, [bc]
 	;Mask out the upper 4 bits to get the note length index
@@ -1169,7 +1203,8 @@ SECTION "Audio", ROMX[$4000], BANK[$1]
 	add hl, de
 	ld [hl], a
 	
-;Now get the instrument from the first bit of byte 1 and lower 4 bits of byte 2GetInst:
+;Now get the instrument from the first bit of byte 1 and lower 4 bits of byte 2
+GetInst:
 	;Get the first note byte again
 	ld a, [CurCmd]
 	;If bit is set, then add 32 to total (instrument is +16)
@@ -1277,7 +1312,8 @@ SECTION "Audio", ROMX[$4000], BANK[$1]
 	ret
 
 
-;Set frequency/period (low)SetPerLo:
+;Set frequency/period (low)
+SetPerLo:
 ;Check if channel is active
 	ld a, [hl]
 	and %00000001
@@ -1295,7 +1331,8 @@ SECTION "Audio", ROMX[$4000], BANK[$1]
 	;Otherwise, load the period low into register NRx3
 	ld a, [hl]
 	ld [de], a
-CheckPerTrigger:
+
+CheckPerTrigger:
 	;Now check the period high
 	dec hl
 	inc de
@@ -1320,7 +1357,8 @@ SECTION "Audio", ROMX[$4000], BANK[$1]
 	inc de
 	ld a, [hl]
 	ld [de], a
-SetPerHi:
+
+SetPerHi:
 ;Set period (high)
 	;Load the period low (with trigger) value from RAM
 	pop hl
@@ -1333,14 +1371,16 @@ SECTION "Audio", ROMX[$4000], BANK[$1]
 	ld [hl], a
 	ret
 
-SetC4Freq:
+
+SetC4Freq:
 	;Load the current noise frequency from RAM variable into Ch4 RAM and NR43
 	ld a, [CurNoise]
 	ld [C4Freq+1], a
 	ld [de], a
 	;Then do the rest
 	jr CheckPerTrigger
-C4CheckVibSeqDelay:
+
+C4CheckVibSeqDelay:
 	;If value is 0, then return
 	ld a, [C4VibSeqDelay]
 	and a
@@ -1381,7 +1421,8 @@ SECTION "Audio", ROMX[$4000], BANK[$1]
 	ld [C4VibSeq+1], a
 	ret
 
-C4ProcessVibLoop:
+
+C4ProcessVibLoop:
 	;Reset the delay to 1
 	ld a, 1
 	ld [C4VibSeqDelay], a
@@ -1394,7 +1435,8 @@ SECTION "Audio", ROMX[$4000], BANK[$1]
 	ld [C4VibSeq+1], a
 	ret
 
-VCMDTable:
+
+VCMDTable:
 	dw EventTie			;$60
 	dw EventStop			;$61
 	dw EventJump			;$62
@@ -1409,7 +1451,8 @@ SECTION "Audio", ROMX[$4000], BANK[$1]
 	dw EventC2Pan		;$6B
 	dw EventC3Pan		;$6C
 	dw EventC4Pan		;$6D
-GetVCMD:
+
+GetVCMD:
 ;Get the current voice command (VCMD)
 	sub $60
 	add a
@@ -1432,8 +1475,10 @@ SECTION "Audio", ROMX[$4000], BANK[$1]
 	ld l, [hl]
 	ld h, a
 	jp hl
-EventTie:
-;Delay the next note by length, increasing note length;Parameters: -x (- = unused, x = length)
+
+EventTie:
+;Delay the next note by length, increasing note length
+;Parameters: -x (- = unused, x = length)
 	;Get the note lengths pointer
 	ld hl, NoteLens+1
 	ld a, [hl]
@@ -1462,7 +1507,8 @@ SECTION "Audio", ROMX[$4000], BANK[$1]
 	inc bc
 	inc hl
 	jp UpdatePtr
-EventStop:
+
+EventStop:
 	;Stop the channel
 	pop hl
 	;Set the channel play flag to 0
@@ -1471,8 +1517,10 @@ SECTION "Audio", ROMX[$4000], BANK[$1]
 	ld a, 0
 	ld [hl], a
 	ret
-EventJump:
-;Jump to the following pointer (used for looping);Parameters: xx xx (x = Pointer)
+
+EventJump:
+;Jump to the following pointer (used for looping)
+;Parameters: xx xx (x = Pointer)
 	;Set the channel note length to 1
 	pop hl
 	ld de, -2
@@ -1487,8 +1535,10 @@ SECTION "Audio", ROMX[$4000], BANK[$1]
 	ld a, [bc]
 	ld [hl], a
 	jp GotoRestart
-EventNoise:
-;Change the noise frequency value (NR43);Parameters: xx (X = Value)
+
+EventNoise:
+;Change the noise frequency value (NR43)
+;Parameters: xx (X = Value)
 	pop hl
 	;Get next noise parameter and load it into RAM
 	inc bc
@@ -1503,8 +1553,11 @@ SECTION "Audio", ROMX[$4000], BANK[$1]
 	inc bc
 	call UpdatePtr
 	jp GotoRestart
-EventMacro:
-;Go to a macro (subroutine) with transpose for specified number of times;Parameters: xx yy zz (X = Macro number, Y = Transpose, Z = Number of times);(Note: 1 level only)
+
+EventMacro:
+;Go to a macro (subroutine) with transpose for specified number of times
+;Parameters: xx yy zz (X = Macro number, Y = Transpose, Z = Number of times)
+;(Note: 1 level only)
 	;Set channel length to 1
 	pop hl
 	ld de, -2
@@ -1587,7 +1640,8 @@ SECTION "Audio", ROMX[$4000], BANK[$1]
 	ld a, b
 	ld [de], a
 	jp GotoRestart
-EventMacroRet:
+
+EventMacroRet:
 ;Return from the current macro
 	inc bc
 	;Set channel length flag to 1
@@ -1632,7 +1686,8 @@ SECTION "Audio", ROMX[$4000], BANK[$1]
 	ld [hl], a
 	jp GotoRestart
 
-EventMacroRetEnd:
+
+EventMacroRetEnd:
 	;Reset macro transpose to 0
 	inc de
 	ld a, 0
@@ -1649,8 +1704,10 @@ SECTION "Audio", ROMX[$4000], BANK[$1]
 	ld [hl], a
 	;Go to start code
 	jp GotoRestart
-EventCondFlag:
-;Set a conditional flag (not used by the driver);Parameters: xx (X = Value)
+
+EventCondFlag:
+;Set a conditional flag (not used by the driver)
+;Parameters: xx (X = Value)
 	inc bc
 	ld a, [bc]
 	ld [LoopFlag], a
@@ -1664,14 +1721,17 @@ SECTION "Audio", ROMX[$4000], BANK[$1]
 	inc bc
 	call UpdatePtr
 	jp GotoRestart
-EventGlobalPan:
-;Set global panning;Parameters: xx (X = Value, see NR51 usage)
+
+EventGlobalPan:
+;Set global panning
+;Parameters: xx (X = Value, see NR51 usage)
 	inc bc
 	ld a, [bc]
 	ldh [rNR51], a
 	ld [MasterPan], a
 
-;Reset the note by setting the channel length to 1ResetNote:
+;Reset the note by setting the channel length to 1
+ResetNote:
 	;Set channel note length to 1
 	inc bc
 	pop hl
@@ -1682,8 +1742,10 @@ SECTION "Audio", ROMX[$4000], BANK[$1]
 	;Update the channel pointer
 	call UpdatePtr
 	jr GotoRestart
-EventC1Pan:
-;Set channel 1 panning;Parameters: xx (X = Value, only channel 1 bits are used)
+
+EventC1Pan:
+;Set channel 1 panning
+;Parameters: xx (X = Value, only channel 1 bits are used)
 	inc bc
 	;Get current panning (NR51) value and mask out channel 1 bits
 	ld a, [MasterPan]
@@ -1696,8 +1758,10 @@ SECTION "Audio", ROMX[$4000], BANK[$1]
 	ld [MasterPan], a
 	ldh [rNR51], a
 	jr ResetNote
-EventC2Pan:
-;Set channel 2 panning;Parameters: xx (X = Value, only channel 2 bits are used)
+
+EventC2Pan:
+;Set channel 2 panning
+;Parameters: xx (X = Value, only channel 2 bits are used)
 	inc bc
 	;Get current panning (NR51) value and mask out channel 2 bits
 	ld a, [MasterPan]
@@ -1710,8 +1774,10 @@ SECTION "Audio", ROMX[$4000], BANK[$1]
 	ld [MasterPan], a
 	ldh [rNR51], a
 	jr ResetNote
-EventC3Pan:
-;Set channel 3 panning;Parameters: xx (X = Value, only channel 3 bits are used)
+
+EventC3Pan:
+;Set channel 3 panning
+;Parameters: xx (X = Value, only channel 3 bits are used)
 	inc bc
 	;Get current panning (NR51) value and mask out channel 3 bits
 	ld a, [MasterPan]
@@ -1724,8 +1790,10 @@ SECTION "Audio", ROMX[$4000], BANK[$1]
 	ld [MasterPan], a
 	ldh [rNR51], a
 	jr ResetNote
-EventC4Pan:
-;Set channel 4 panning;Parameters: xx (X = Value, only channel 4 bits are used)
+
+EventC4Pan:
+;Set channel 4 panning
+;Parameters: xx (X = Value, only channel 4 bits are used)
 	inc bc
 	;Get current panning (NR51) value and mask out channel 4 bits
 	ld a, [MasterPan]
@@ -1738,8 +1806,10 @@ SECTION "Audio", ROMX[$4000], BANK[$1]
 	ld [MasterPan], a
 	ldh [rNR51], a
 	jr ResetNote
-EventNoteLens:
-;Set note lengths from the following pointer (for all channels);Parameters: xx xx (X = Pointer)
+
+EventNoteLens:
+;Set note lengths from the following pointer (for all channels)
+;Parameters: xx xx (X = Pointer)
 	inc bc
 	ld a, [bc]
 	ld [NoteLens], a
@@ -1756,8 +1826,10 @@ SECTION "Audio", ROMX[$4000], BANK[$1]
 	inc bc
 	call UpdatePtr
 	jr GotoRestart
-EventTempo:
-;Set the tempo;Parameters: x (X = Value)
+
+EventTempo:
+;Set the tempo
+;Parameters: x (X = Value)
 	inc bc
 	ld a, [bc]
 	ld [Tempo], a
@@ -1771,13 +1843,15 @@ SECTION "Audio", ROMX[$4000], BANK[$1]
 	inc bc
 	call UpdatePtr
 	jr GotoRestart
-UpdatePtr:
+
+UpdatePtr:
 	ld [hl], c
 	inc hl
 	ld [hl], b
 	ret
 
-GotoRestart:
+
+GotoRestart:
 	pop hl
 	ld de, CurRestartPos
 	ld a, [de]
@@ -1787,7 +1861,8 @@ SECTION "Audio", ROMX[$4000], BANK[$1]
 	ld h, a
 	jp hl
 
-FreqsLo:
+
+FreqsLo:
 	db LOW($009D), LOW($0107), LOW($016B), LOW($01CA), LOW($0223), LOW($0278), LOW($02C7), LOW($0312), LOW($0359), LOW($039C), LOW($03DB), LOW($0417)
 	db LOW($044F), LOW($0484), LOW($04B6), LOW($04E5), LOW($0512), LOW($053C), LOW($0564), LOW($0589), LOW($05AD), LOW($05CE), LOW($05EE), LOW($060C)
 	db LOW($0628), LOW($0642), LOW($065B), LOW($0673), LOW($0689), LOW($069E), LOW($06B2), LOW($06C5), LOW($06D7), LOW($06E7), LOW($06F7), LOW($0706)
@@ -1796,7 +1871,8 @@ SECTION "Audio", ROMX[$4000], BANK[$1]
 	db LOW($07C5), LOW($07C9), LOW($07CC), LOW($07CF), LOW($07D2), LOW($07D4), LOW($07D7), LOW($07D9), LOW($07DB), LOW($07DD), LOW($07DF), LOW($07E1)
 	db LOW($07E3), LOW($07E5), LOW($07E6), LOW($07E8), LOW($07E9), LOW($07EA), LOW($07EC), LOW($07ED), LOW($07EE), LOW($07EF), LOW($07F0), LOW($07F1)
 	db LOW($07F2), LOW($07F3), LOW($07F3), LOW($07F4), LOW($07F5), LOW($07F5), LOW($07F7), LOW($07F7), LOW($07F8), LOW($07F8), LOW($07FA), LOW($07FA)
-FreqsHi:
+
+FreqsHi:
 	db HIGH($009D), HIGH($0107), HIGH($016B), HIGH($01CA), HIGH($0223), HIGH($0278), HIGH($02C7), HIGH($0312), HIGH($0359), HIGH($039C), HIGH($03DB), HIGH($0417)
 	db HIGH($044F), HIGH($0484), HIGH($04B6), HIGH($04E5), HIGH($0512), HIGH($053C), HIGH($0564), HIGH($0589), HIGH($05AD), HIGH($05CE), HIGH($05EE), HIGH($060C)
 	db HIGH($0628), HIGH($0642), HIGH($065B), HIGH($0673), HIGH($0689), HIGH($069E), HIGH($06B2), HIGH($06C5), HIGH($06D7), HIGH($06E7), HIGH($06F7), HIGH($0706)
@@ -1805,7 +1881,8 @@ SECTION "Audio", ROMX[$4000], BANK[$1]
 	db HIGH($07C5), HIGH($07C9), HIGH($07CC), HIGH($07CF), HIGH($07D2), HIGH($07D4), HIGH($07D7), HIGH($07D9), HIGH($07DB), HIGH($07DD), HIGH($07DF), HIGH($07E1)
 	db HIGH($07E3), HIGH($07E5), HIGH($07E6), HIGH($07E8), HIGH($07E9), HIGH($07EA), HIGH($07EC), HIGH($07ED), HIGH($07EE), HIGH($07EF), HIGH($07F0), HIGH($07F1)
 	db HIGH($07F2), HIGH($07F3), HIGH($07F3), HIGH($07F4), HIGH($07F5), HIGH($07F5), HIGH($07F7), HIGH($07F7), HIGH($07F8), HIGH($07F8), HIGH($07FA), HIGH($07FA)
-GetSFXMacro:
+
+GetSFXMacro:
 	;Get SFX macro pointer from table
 	ld hl, SFXMacroTab
 	sla a
@@ -1814,7 +1891,8 @@ SECTION "Audio", ROMX[$4000], BANK[$1]
 	jr nc, InitSFX
 
 	inc h
-InitSFX:
+
+InitSFX:
 	;Go to SFX pointer
 	ld a, [hl]
 	ld c, a
@@ -1840,7 +1918,8 @@ SECTION "Audio", ROMX[$4000], BANK[$1]
 	cp 3
 	jr z, InitSFXC4
 
-	;Otherwise, it is channel 1InitSFXC1:
+	;Otherwise, it is channel 1
+InitSFXC1:
 	;Set panning
 	ld a, [MasterPan]
 	ld d, a
@@ -1860,7 +1939,8 @@ SECTION "Audio", ROMX[$4000], BANK[$1]
 	ld a, 2
 	ld [C1SFXDelay], a
 	jr PlaySFXC1
-InitSFXC2:
+
+InitSFXC2:
 	;Set panning
 	ld a, [MasterPan]
 	ld d, a
@@ -1880,7 +1960,8 @@ SECTION "Audio", ROMX[$4000], BANK[$1]
 	ld a, 2
 	ld [C2SFXDelay], a
 	jr PlaySFXC1
-InitSFXC3:
+
+InitSFXC3:
 	;Set panning
 	ld a, [MasterPan]
 	ld d, a
@@ -1900,7 +1981,8 @@ SECTION "Audio", ROMX[$4000], BANK[$1]
 	ld a, 2
 	ld [C3SFXDelay], a
 	jr PlaySFXC1
-InitSFXC4:
+
+InitSFXC4:
 	;Set panning
 	ld a, [MasterPan]
 	ld d, a
@@ -1920,7 +2002,8 @@ SECTION "Audio", ROMX[$4000], BANK[$1]
 	ld a, 2
 	ld [C4SFXDelay], a
 
-;Play the current sound effect, starting with channel 1 if presentPlaySFXC1:
+;Play the current sound effect, starting with channel 1 if present
+PlaySFXC1:
 	ld hl, C1PlayFlag
 	ld a, l
 	ld [CurSFX], a
@@ -1938,7 +2021,8 @@ SECTION "Audio", ROMX[$4000], BANK[$1]
 	;Otherwise, then play SFX
 	ld de, rNR11
 	call CheckSFX
-PlaySFXC2:
+
+PlaySFXC2:
 	ld hl, C2PlayFlag
 	ld a, l
 	ld [CurSFX], a
@@ -1955,7 +2039,8 @@ SECTION "Audio", ROMX[$4000], BANK[$1]
 
 	ld de, rNR21
 	call CheckSFX
-PlaySFXC3:
+
+PlaySFXC3:
 	ld hl, C3PlayFlag
 	ld a, l
 	ld [CurSFX], a
@@ -1972,7 +2057,8 @@ SECTION "Audio", ROMX[$4000], BANK[$1]
 
 	ld de, rNR31
 	call CheckSFX
-PlaySFXC4:
+
+PlaySFXC4:
 	ld hl, C4PlayFlag
 	ld a, l
 	ld [CurSFX], a
@@ -1990,10 +2076,12 @@ SECTION "Audio", ROMX[$4000], BANK[$1]
 	ld de, rNR41
 	call CheckSFX
 
-;Return from SFX routinePlaySFXRet:
+;Return from SFX routine
+PlaySFXRet:
 	ret
 
-CheckSFX:
+
+CheckSFX:
 	;Set the panning for SFX
 	ld a, [MasterSFXPan]
 	ldh [rNR51], a
@@ -2006,7 +2094,8 @@ SECTION "Audio", ROMX[$4000], BANK[$1]
 	;Otherwise, return
 	ret
 
-GetNextSFXCMD:
+
+GetNextSFXCMD:
 	;Get the next SFX command
 	ld a, [bc]
 	;Is it a stop command (FF)?
@@ -2041,7 +2130,8 @@ SECTION "Audio", ROMX[$4000], BANK[$1]
 	ld a, [bc]
 	ld [de], a
 	inc bc
-SFXUpdatePtr:
+
+SFXUpdatePtr:
 ;Update the pointer
 	dec hl
 	ld [hl], b
@@ -2049,7 +2139,8 @@ SECTION "Audio", ROMX[$4000], BANK[$1]
 	ld [hl], c
 	ret
 
-SFXEventStop:
+
+SFXEventStop:
 ;Stop the macro
 	;Reset the pointer
 	ld a, 0
@@ -2072,13 +2163,15 @@ SECTION "Audio", ROMX[$4000], BANK[$1]
 	ld a, [bc]
 	or %00000001
 	ld [bc], a
-SFXRestorePan:
+
+SFXRestorePan:
 	;Restore the original panning
 	ld a, [MasterPan]
 	ldh [rNR51], a
 	ret
 
-SFXEventJump:
+
+SFXEventJump:
 	;Load the loop position from the following 2 bytes as the position
 	inc bc
 	ld a, [bc]
@@ -2091,9 +2184,11 @@ SECTION "Audio", ROMX[$4000], BANK[$1]
 	ld a, 1
 	ld [hl], a
 	jr SFXUpdatePtr
-Waveform:
+
+Waveform:
 	db $AA, $AA, $AA, $AA, $AA, $AA, $AA, $AA, $00, $00, $00, $00, $00, $00, $00, $00
-SFXMacroTab:
+
+SFXMacroTab:
 	dw SFXMacro00
 	dw SFXMacro01
 	dw SFXMacro02
@@ -2435,7 +2530,8 @@ SongMacro10:
 	db $37, $CA
 	db $3C, $BA
 	db $65
-SongTab:
+
+SongTab:
 .Empty
 	dw Empty1A, Empty1B, Empty1C, Empty1D, NoteLens1
 .Action
@@ -2446,12 +2542,14 @@ SongMacro10:
 	dw TitleA, TitleB, TitleC, TitleD, NoteLens1
 .Fanfare
 	dw FanfareA, FanfareB, FanfareC, FanfareD, NoteLens1
-	NoteLens1:
+	
+NoteLens1:
 	db 1, 2, 3, 4, 6, 9, 12, 18, 24, 36, 48, 72, 96, 4, 8, 16
 	
 NoteLens2:
 	db 3, 4, 6, 9, 12, 18, 24, 36, 48, 72, 96, 144, 192, 8, 16, 32
-	InsTab:
+	
+InsTab:
 	dw InsRest
 	dw InsBassDrum
 	dw InsSnareDrum
@@ -3357,7 +3455,8 @@ ModSeq06:
 	db 1, 48
 	db $FF
 	dw ModSeq06
-SongMacroTab:
+
+SongMacroTab:
 	dw SongMacro00
 	dw SongMacro01
 	dw SongMacro02
